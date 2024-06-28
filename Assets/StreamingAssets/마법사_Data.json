@@ -1,0 +1,1 @@
+{"name":"마법사","exp":3.0,"level":200,"hp":100,"attack":5,"items":[1,2],"skills":[{"id":1,"level":1,"upgrade":0},{"id":2,"level":2,"upgrade":1},{"id":3,"level":3,"upgrade":2}]}
