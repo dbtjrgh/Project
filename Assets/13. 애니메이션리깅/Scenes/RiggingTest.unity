@@ -2898,6 +2898,7 @@ MonoBehaviour:
   subHandHint: {fileID: 609229870}
   moveSpeed: 3
   reloadClip: {fileID: -203655887218126122, guid: a4b3c239525d24b4ab8b9b9c77f816d1, type: 3}
+  tossGrenadeClip: {fileID: -203655887218126122, guid: 209a59beaf69acb408675b310b850a61, type: 3}
   rig: {fileID: 697678556}
 --- !u!114 &1318403026
 MonoBehaviour:

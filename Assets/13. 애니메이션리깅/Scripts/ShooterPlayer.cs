@@ -14,36 +14,40 @@ public class ShooterPlayer : MonoBehaviour
     public float moveSpeed;
     private Animator animator;
     public AnimationClip reloadClip;
+    public AnimationClip tossGrenadeClip;
     public Rig rig;
     private bool isReloading = false;
-    private bool isTossgrenade = false;
+    private bool isTossingGrenade = false;
     private bool isWalk = false;
 
-	private void Awake()
+    private void Awake()
     {
-		animator = GetComponent<Animator>();
-	}
-	private void Update() 
+        animator = GetComponent<Animator>();
+    }
+
+    private void Update()
     {
         if (Input.GetKeyDown(KeyCode.Tab))
         { //탭 버튼을 누를때마다 수행
-            if(currentGun == 0)
+            if (currentGun == 0)
             {
                 ChangeWeapon(1);
-            } else {
+            }
+            else
+            {
                 ChangeWeapon(0);
             }
             //ChangeWeapon(currentGun == 0 ? 1 : 0);
         }
 
-        if (Input.GetKeyDown(KeyCode.R))
+        if (Input.GetKeyDown(KeyCode.R) && !isReloading && !isTossingGrenade)
         {
             Reload();
         }
 
-        if (Input.GetKeyDown(KeyCode.G))
+        if (Input.GetKeyDown(KeyCode.G) && !isReloading && !isTossingGrenade)
         {
-            Tossgrenade();
+            TossGrenade();
         }
 
         if (Input.GetKeyDown(KeyCode.LeftShift))
@@ -54,11 +58,11 @@ public class ShooterPlayer : MonoBehaviour
         Vector3 moveDir = Vector3.zero;
         moveDir.x = Input.GetAxis("Horizontal");
         moveDir.z = Input.GetAxis("Vertical");
-		//new Vector3(Input.GetAxis("Horizontal"), 0 ,Input.GetAxis("Vertical"));
 
-		Move(moveDir);
-	}
-	public void ChangeWeapon(int index)
+        Move(moveDir);
+    }
+
+    public void ChangeWeapon(int index)
     {
         guns[currentGun].gameObject.SetActive(false);
         currentGun = index;
@@ -69,7 +73,7 @@ public class ShooterPlayer : MonoBehaviour
 
     public void Move(Vector3 moveDir)
     {
-        if(isWalk)
+        if (isWalk)
         {
             transform.Translate(moveDir * Time.deltaTime * moveSpeed);
             animator.SetFloat("Xposition", moveDir.x);
@@ -83,7 +87,6 @@ public class ShooterPlayer : MonoBehaviour
             animator.SetFloat("Yposition", moveDir.z);
             animator.SetFloat("Speed", moveDir.magnitude * 2);
         }
-       
     }
 
     public void WalkRunToggle()
@@ -91,39 +94,57 @@ public class ShooterPlayer : MonoBehaviour
         isWalk = !isWalk;
     }
 
-    public void Reload() 
+    public void Reload()
     {
         if (isReloading)
         {
             return;
         }
         isReloading = true;
-        rig.weight = 0;
+        StartCoroutine(AnimationCoroutine(reloadClip.length));
         animator.SetTrigger("Reload");
-        //재장전 후 다시 isReloading = false 해주기 위한 코루틴
-        StartCoroutine(Coroutine(reloadClip.length));
     }
 
-    public void Tossgrenade() 
+    public void TossGrenade()
     {
-        if (isReloading)
+        if (isTossingGrenade)
         {
             return;
         }
-        isTossgrenade = true;
-        rig.weight = 0;
+        isTossingGrenade = true;
+        StartCoroutine(AnimationCoroutine(tossGrenadeClip.length));
         animator.SetTrigger("Tossgrenade");
-        //재장전 후 다시 isReloading = false 해주기 위한 코루틴
-        StartCoroutine(Coroutine(reloadClip.length));
     }
 
-    IEnumerator Coroutine(float duration) 
+    IEnumerator AnimationCoroutine(float duration)
     {
-        
-        
-        yield return null;
+        float elapsedTime = 0f;
 
+        // Weight 값을 0으로 서서히 줄이기
+        while (elapsedTime < duration / 2)
+        {
+            rig.weight = Mathf.Lerp(1, 0, elapsedTime / (duration / 2));
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+        rig.weight = 0;
+
+        // 애니메이션 클립의 나머지 시간 기다리기
+        yield return new WaitForSeconds(duration / 2);
+
+        elapsedTime = 0f;
+
+        // Weight 값을 1로 서서히 증가시키기
+        while (elapsedTime < duration / 2)
+        {
+            rig.weight = Mathf.Lerp(0, 1, elapsedTime / (duration / 2));
+            elapsedTime += Time.deltaTime;
+            yield return null;
+        }
+        rig.weight = 1;
+
+        // 상태 초기화
+        isReloading = false;
+        isTossingGrenade = false;
     }
-
-
 }
